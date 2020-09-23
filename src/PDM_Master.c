@@ -649,6 +649,8 @@ main(void)
 
 			//am_util_delay_ms(20);
 			//am_util_delay_ms(26);	//512 buffer , 	96MHz	
+			am_util_delay_ms(5);	//128 buffer , 	96MHz  GCC -Os am_sdm 4.240ms 
+			am_util_delay_us(128+8);//128 buffer , 	96MHz  GCC -O3 am_sdm 5.136ms 
 #ifdef __PCM_FROM_DMIC
 			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], i16PDMBuf[(u32PDMpg-1)%2]);
 #else

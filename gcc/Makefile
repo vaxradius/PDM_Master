@@ -121,7 +121,7 @@ LIBS += ../lib/gcc/bin/am_sdm.a
 CFLAGS = -mthumb -mcpu=$(CPU) -mfpu=$(FPU) -mfloat-abi=$(FABI)
 CFLAGS+= -ffunction-sections -fdata-sections -fomit-frame-pointer
 CFLAGS+= -MMD -MP -std=c99 -Wall -g
-CFLAGS+= -Os
+CFLAGS+= -O3
 CFLAGS+= $(DEFINES)
 CFLAGS+= $(INCLUDES)
 CFLAGS+= 
