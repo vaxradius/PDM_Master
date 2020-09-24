@@ -6,7 +6,8 @@ extern "C"
 {
 #endif
 
-void Sigma_Delta_Modulator(uint16_t *out, int16_t in, uint16_t len);
+void Am_Sigma_Delta_Init(uint8_t Order, uint8_t Osr);
+void Am_Sigma_Delta(uint16_t *out, int16_t in, uint16_t len);
 
 #ifdef __cplusplus
 }

@@ -568,7 +568,7 @@ void Sigma_Delta_ADC(uint16_t *pdm, int16_t *pcm)
 
 	for(j=0; j<BUF_SIZE; j++)
 	{
-		Sigma_Delta_Modulator(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
+		Am_Sigma_Delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
 		//two_level_sigma_delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
 	}
 }
@@ -635,6 +635,8 @@ main(void)
 	//
 	PWRCTRL->MEMPWDINSLEEP_b.SRAMPWDSLP = PWRCTRL_MEMPWDINSLEEP_SRAMPWDSLP_NONE;
 
+	Am_Sigma_Delta_Init(4, OSR);
+
 	//
 	//
 	// Loop forever while sleeping.
@@ -650,7 +652,8 @@ main(void)
 			//am_util_delay_ms(20);
 			//am_util_delay_ms(26);	//512 buffer , 	96MHz	
 			am_util_delay_ms(5);	//128 buffer , 	96MHz  GCC -Os am_sdm 4.240ms 
-			am_util_delay_us(128+8);//128 buffer , 	96MHz  GCC -O3 am_sdm 5.136ms 
+			//am_util_delay_us(64+32+16+8);//128 buffer , 	96MHz  , 750KHz , 5th Sigma Delta
+			am_util_delay_us(256+32+16+8+2);//128 buffer , 	96MHz  750KHz , 4th Sigma Delta
 #ifdef __PCM_FROM_DMIC
 			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], i16PDMBuf[(u32PDMpg-1)%2]);
 #else
