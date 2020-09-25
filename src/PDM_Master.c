@@ -82,7 +82,7 @@ am_hal_pdm_config_t g_sPdmConfig =
 	.eLeftGain = AM_HAL_PDM_GAIN_P330DB,
 	.eRightGain = AM_HAL_PDM_GAIN_P330DB,
 	.ui32DecimationRate = (OSR/2),
-	.bHighPassEnable = 1,
+	.bHighPassEnable = 0,
 	.ui32HighPassCutoff = 0xB,
 #ifdef __750KHZ
 	.ePDMClkSpeed = AM_HAL_PDM_CLK_750KHZ,
