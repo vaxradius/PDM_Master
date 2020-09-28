@@ -9,6 +9,9 @@
 
 /*if not define __750KHZ, it will be 1.5MHz*/
 #define __750KHZ
+/*if not define __750KHZ_DMIC_CLOCK, it will be 1.5MHz*/
+//#define __750KHZ_DMIC_CLOCK
+
 #define PAD_DRIVESTRENGTH AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA
 
 #define PDMCLK_PIN 12
@@ -76,10 +79,14 @@ am_hal_pdm_config_t g_sPdmConfig =
 	.eClkDivider = AM_HAL_PDM_MCLKDIV_1,
 	.eLeftGain = AM_HAL_PDM_GAIN_P330DB,
 	.eRightGain = AM_HAL_PDM_GAIN_P330DB,
-	.ui32DecimationRate = (OSR/2),
+#ifdef __750KHZ_DMIC_CLOCK
+	.ui32DecimationRate = (24),
+#else
+	.ui32DecimationRate = (48),
+#endif
 	.bHighPassEnable = 0,
 	.ui32HighPassCutoff = 0xB,
-#ifdef __750KHZ
+#ifdef __750KHZ_DMIC_CLOCK
 	.ePDMClkSpeed = AM_HAL_PDM_CLK_750KHZ,
 #else
 	.ePDMClkSpeed = AM_HAL_PDM_CLK_1_5MHZ,
