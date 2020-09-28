@@ -5,11 +5,10 @@
 #include "am_mcu_apollo.h"
 #include "am_bsp.h"
 #include "am_util.h"
+#include "SDM.h"
 
 /*if not define __750KHZ, it will be 1.5MHz*/
 #define __750KHZ
-/*if not define __PCM_FROM_DMIC, source will be data_source.s */
-#define __PCM_FROM_DMIC
 #define PAD_DRIVESTRENGTH AM_HAL_GPIO_PIN_DRIVESTRENGTH_12MA
 
 #define PDMCLK_PIN 12
@@ -53,7 +52,6 @@
 //#define OSR				(16) //over sampling rate 250KHz
 #define BIT_RESOLUTION 	16
 #define BIT_BUF_SIZE 	((BUF_SIZE*OSR)/BIT_RESOLUTION)
-#define WAV_METADATA	(0x30)
 //*****************************************************************************
 //
 // Global variables.
@@ -65,9 +63,6 @@ int16_t i16PDMBuf[2][BUF_SIZE] = {{0},{0}};
 uint16_t i16BitsBuf[2][BIT_BUF_SIZE] = {0}; //16bit*3 = 48 over sampling rate
 uint32_t u32PDMPingpong = 0;
 uint32_t u32BitBufPingpong = 0;
-
-extern uint8_t WAVDataBegin;
-extern uint8_t WAVDataEnd;
 
 //*****************************************************************************
 //
@@ -581,7 +576,6 @@ void Sigma_Delta_ADC(uint16_t *pdm, int16_t *pcm)
 int
 main(void)
 {
-	uint32_t index = (WAV_METADATA/2);
 	uint32_t u32PDMpg;
 	uint32_t u32BitBufpg;
 	 am_hal_burst_avail_e          eBurstModeAvailable;
@@ -651,19 +645,11 @@ main(void)
 
 			//am_util_delay_ms(20);
 			//am_util_delay_ms(26);	//512 buffer , 	96MHz	
-			am_util_delay_ms(5);	//128 buffer , 	96MHz  GCC -Os am_sdm 4.240ms 
+			//am_util_delay_ms(5);	//128 buffer , 	96MHz  GCC -Os am_sdm 4.240ms 
 			//am_util_delay_us(64+32+16+8);//128 buffer , 	96MHz  , 750KHz , 5th Sigma Delta
-			am_util_delay_us(256+32+16+8+2);//128 buffer , 	96MHz  750KHz , 4th Sigma Delta
-#ifdef __PCM_FROM_DMIC
+			//am_util_delay_us(256+32+16+8+2);//128 buffer , 	96MHz  750KHz , 4th Sigma Delta
+
 			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], i16PDMBuf[(u32PDMpg-1)%2]);
-#else
-			if(index >= (((uint8_t *)(&WAVDataEnd) - (uint8_t *)(&WAVDataBegin))/2)-BUF_SIZE)
-				index = (WAV_METADATA/2);
-
-			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], ((int16_t*)(&WAVDataBegin))+index);
-
-			index += BUF_SIZE;
-#endif
 
 			if(u32BitBufpg != u32BitBufPingpong)
 			{
