@@ -21,11 +21,11 @@
 #define PCLK_TIMER	5
 #define PCLK_TIMER_SEG AM_HAL_CTIMER_TIMERB
 
-#define PDM_DATA_P_PIN     	22
+#define PDM_DATA_P_PIN     	48
 #define PDM_DATA_P_TIMER	3
 #define PDM_DATA_P_CLOCK_SOURCE 0x1B
 
-#define PDM_DATA_M_PIN     	27
+#define PDM_DATA_M_PIN     	26
 #define PDM_DATA_M_TIMER	1
 #define PDM_DATA_M_CLOCK_SOURCE 0x1B
 
