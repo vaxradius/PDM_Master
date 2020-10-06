@@ -564,6 +564,32 @@ void two_level_sigma_delta(uint16_t *out, int16_t in, uint16_t len)
 	}
 }
 
+void PDM_2_PWM(uint16_t *pdm)
+{
+	uint32_t i,j = 0;
+	uint16_t pdm_tmp;
+	uint16_t idx = 0;
+
+	for(i=0; i<(OSR/16); i++)
+	{
+		pdm_tmp = *(pdm+i);
+		//am_util_stdio_printf("%x ",*(pdm+i));
+		*(pdm+i) = 0;
+		idx = 0;
+		for(j=0; j<16; j++)
+		{
+			if(pdm_tmp >> j & 0x01)
+			{
+				*(pdm+i)|= (1<<idx);
+				idx++;
+				//am_util_stdio_printf("1 ");
+			}
+			//else
+				//am_util_stdio_printf("0 ");
+		}
+		//am_util_stdio_printf("%x \n",*(pdm+i));
+	}
+}
 void Sigma_Delta_ADC(uint16_t *pdm, int16_t *pcm)
 {
 	uint32_t j = 0;
@@ -571,6 +597,7 @@ void Sigma_Delta_ADC(uint16_t *pdm, int16_t *pcm)
 	for(j=0; j<BUF_SIZE; j++)
 	{
 		Am_Sigma_Delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
+		//PDM_2_PWM(pdm+(j*(OSR/16)));
 		//two_level_sigma_delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
 	}
 }
@@ -595,6 +622,7 @@ main(void)
 	am_hal_cachectrl_config(&am_hal_cachectrl_defaults);
 	am_hal_cachectrl_enable();
 	am_bsp_low_power_init();
+	//am_bsp_itm_printf_enable();
 
 	am_hal_interrupt_master_disable();
 
