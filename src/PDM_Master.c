@@ -6,6 +6,7 @@
 #include "am_bsp.h"
 #include "am_util.h"
 #include "SDM.h"
+#include "Alexa.h"
 
 /*if not define __750KHZ, it will be 1.5MHz*/
 #define __750KHZ
@@ -658,6 +659,25 @@ void Sigma_Delta_ADC(uint16_t *pdm, int16_t *pcm)
 	}
 }
 
+void Enable_HFADJ(void)
+{
+
+//
+    // Enable the 32KHz XTAL.
+    //
+    am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_XTAL_START, 0);
+
+    //
+    // Wait for 1 second for the 32KHz XTAL to startup and stabilize.
+    //
+    am_util_delay_ms(1000);
+
+    //
+    // Enable HFADJ.
+    //
+    am_hal_clkgen_control(AM_HAL_CLKGEN_CONTROL_HFADJ_ENABLE, 0);
+}
+
 //*****************************************************************************
 //
 // Main
@@ -668,8 +688,10 @@ main(void)
 {
 	uint32_t u32PDMpg;
 	uint32_t u32BitBufpg;
-	 am_hal_burst_avail_e          eBurstModeAvailable;
+	am_hal_burst_avail_e          eBurstModeAvailable;
 	am_hal_burst_mode_e	eBurstMode;
+	uint32_t pcm_idx = 0;
+		
 	//
 	// Perform the standard initialzation for clocks, cache settings, and
 	// board-level low-power operation.
@@ -678,6 +700,7 @@ main(void)
 	am_hal_cachectrl_config(&am_hal_cachectrl_defaults);
 	am_hal_cachectrl_enable();
 	am_bsp_low_power_init();
+	//Enable_HFADJ();
 	//am_bsp_itm_printf_enable();
 
 	am_hal_interrupt_master_disable();
@@ -739,9 +762,15 @@ main(void)
 			//am_util_delay_ms(5);	//128 buffer , 	96MHz  GCC -Os am_sdm 4.240ms 
 			//am_util_delay_us(64+32+16+8);//128 buffer , 	96MHz  , 750KHz , 5th Sigma Delta
 			//am_util_delay_us(256+32+16+8+2);//128 buffer , 	96MHz  750KHz , 4th Sigma Delta
-			am_util_delay_us(6*1024+32+4+2+1);//128 buffer , 	96MHz  750KHz , 3rd Sigma Delta (0.75476074218) cpu available
-
+			//am_util_delay_us(6*1024+32+4+2+1);//128 buffer , 	96MHz  750KHz , 3rd Sigma Delta (0.75476074218) cpu available
+#if 0
 			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], i16PDMBuf[(u32PDMpg-1)%2]);
+#else
+			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], ((int16_t*)US_P3_4_F_wav)+pcm_idx);
+			pcm_idx += BUF_SIZE;
+			if(pcm_idx > (US_P3_4_F_wav_size/2) - BUF_SIZE)
+				pcm_idx = 0;
+#endif
 
 			if(u32BitBufpg != u32BitBufPingpong)
 			{
