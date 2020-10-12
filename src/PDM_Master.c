@@ -8,7 +8,7 @@
 #include "SDM.h"
 
 /*if not define __750KHZ, it will be 1.5MHz*/
-//#define __750KHZ
+#define __750KHZ
 /*if not define __750KHZ_DMIC_CLOCK, it will be 1.5MHz*/
 //#define __750KHZ_DMIC_CLOCK
 
@@ -568,10 +568,7 @@ void two_level_sigma_delta(uint16_t *out, int16_t in, uint16_t len)
 //Derrived from https://books.google.com.tw/books?id=Gum3CgAAQBAJ&pg=PA120&dq=Delta-sigma+Modulators+0.1158&hl=zh-TW&sa=X&ved=2ahUKEwiJ6Key4q3sAhVHyosBHQdADwQQ6AEwAHoECAAQAg#v=onepage&q&f=false
 void three_level_sigma_delta(uint16_t *out, int16_t in, uint16_t len)
 {
-
-        volatile uint16_t i,j = 0;
-        volatile unsigned int reg_index;
-        volatile unsigned int bit_index;
+		uint16_t i,j = 0;
 
         static float qe0 = 0;
         static float qe1 = 0;
@@ -742,6 +739,7 @@ main(void)
 			//am_util_delay_ms(5);	//128 buffer , 	96MHz  GCC -Os am_sdm 4.240ms 
 			//am_util_delay_us(64+32+16+8);//128 buffer , 	96MHz  , 750KHz , 5th Sigma Delta
 			//am_util_delay_us(256+32+16+8+2);//128 buffer , 	96MHz  750KHz , 4th Sigma Delta
+			am_util_delay_us(6*1024+32+4+2+1);//128 buffer , 	96MHz  750KHz , 3rd Sigma Delta (0.75476074218) cpu available
 
 			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], i16PDMBuf[(u32PDMpg-1)%2]);
 
