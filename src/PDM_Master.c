@@ -6,7 +6,7 @@
 #include "am_bsp.h"
 #include "am_util.h"
 #include "SDM.h"
-#include "Alexa.h"
+#include "alexa_silent.h"
 
 /*if not define __750KHZ, it will be 1.5MHz*/
 #define __750KHZ
@@ -690,7 +690,7 @@ main(void)
 	uint32_t u32BitBufpg;
 	am_hal_burst_avail_e          eBurstModeAvailable;
 	am_hal_burst_mode_e	eBurstMode;
-	uint32_t pcm_idx = 0;
+	uint32_t pcm_idx = 0x30;
 		
 	//
 	// Perform the standard initialzation for clocks, cache settings, and
@@ -766,10 +766,10 @@ main(void)
 #if 0
 			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], i16PDMBuf[(u32PDMpg-1)%2]);
 #else
-			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], ((int16_t*)US_P3_4_F_wav)+pcm_idx);
+			Sigma_Delta_ADC(i16BitsBuf[(u32BitBufpg+1)%2], ((int16_t*)US_P3_4_F_Silent0_wav)+pcm_idx);
 			pcm_idx += BUF_SIZE;
-			if(pcm_idx > (US_P3_4_F_wav_size/2) - BUF_SIZE)
-				pcm_idx = 0;
+			if(pcm_idx > (US_P3_4_F_Silent0_wav_size/2) - BUF_SIZE)
+				pcm_idx = 0x30;
 #endif
 
 			if(u32BitBufpg != u32BitBufPingpong)
