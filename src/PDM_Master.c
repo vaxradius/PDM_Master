@@ -8,7 +8,7 @@
 #include "SDM.h"
 
 /*if not define __750KHZ, it will be 1.5MHz*/
-#define __750KHZ
+//#define __750KHZ
 /*if not define __750KHZ_DMIC_CLOCK, it will be 1.5MHz*/
 //#define __750KHZ_DMIC_CLOCK
 
@@ -44,6 +44,7 @@
 	#define OSR				(48) //over sampling rate 750KHz
 #else
 	#define OSR				(96) //over sampling rate 1.5MHz
+	//#define OSR				(144) //over sampling rate 3MHz
 #endif
 //#define OSR					(192) //over sampling rate 3MHz
 //#define OSR				(128) //over sampling rate 2MHz
@@ -77,8 +78,8 @@ void *PDMHandle;
 am_hal_pdm_config_t g_sPdmConfig =
 {
 	.eClkDivider = AM_HAL_PDM_MCLKDIV_1,
-	.eLeftGain = AM_HAL_PDM_GAIN_P330DB,
-	.eRightGain = AM_HAL_PDM_GAIN_P330DB,
+	.eLeftGain = AM_HAL_PDM_GAIN_P405DB,
+	.eRightGain = AM_HAL_PDM_GAIN_P405DB,
 #ifdef __750KHZ_DMIC_CLOCK
 	.ui32DecimationRate = (24),
 #else
@@ -564,6 +565,63 @@ void two_level_sigma_delta(uint16_t *out, int16_t in, uint16_t len)
 	}
 }
 
+//Derrived from https://books.google.com.tw/books?id=Gum3CgAAQBAJ&pg=PA120&dq=Delta-sigma+Modulators+0.1158&hl=zh-TW&sa=X&ved=2ahUKEwiJ6Key4q3sAhVHyosBHQdADwQQ6AEwAHoECAAQAg#v=onepage&q&f=false
+void three_level_sigma_delta(uint16_t *out, int16_t in, uint16_t len)
+{
+
+        volatile uint16_t i,j = 0;
+        volatile unsigned int reg_index;
+        volatile unsigned int bit_index;
+
+        static float qe0 = 0;
+        static float qe1 = 0;
+        static float qe2 = 0;
+
+
+        static float sum_value0 = 0;
+        static float sum_value1 = 0;
+        static float sum_value2 = 0;
+        static float last_dsm_signal = 0;
+
+        static float k1 = 0.1158;
+        static float k2 = 0.2776;
+        static float k3 = 1.0267;
+        static float g = 0.00153846;
+		float u = ((float) in)/(65536.0);
+
+        for(i = 0; i < len ; i++)
+		{
+			*(out+i) = 0;
+			for(j=0;j<16;j++)
+			{
+                qe0 = k1 * u - k1*last_dsm_signal; 
+                sum_value0 = sum_value0 + qe0;
+
+
+                qe1 = sum_value0 - k2*last_dsm_signal - g*sum_value2;
+
+                sum_value1 = sum_value1 + qe1;
+
+                qe2 = sum_value1 - k3*last_dsm_signal;
+
+                sum_value2 = sum_value2 + qe2;
+
+
+                if(sum_value2 > 0)
+				{
+					last_dsm_signal = 1;
+					*(out+i) |= (1 << j);                         
+                } 
+				else 
+				{
+                    last_dsm_signal = -1;
+                }
+
+        	}
+        }
+}
+
+
 void PDM_2_PWM(uint16_t *pdm)
 {
 	uint32_t i,j = 0;
@@ -596,9 +654,10 @@ void Sigma_Delta_ADC(uint16_t *pdm, int16_t *pcm)
 
 	for(j=0; j<BUF_SIZE; j++)
 	{
-		Am_Sigma_Delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
+		//Am_Sigma_Delta(pdm+(j*(OSR/16)), (*(pcm+j))*2, (OSR/16));
 		//PDM_2_PWM(pdm+(j*(OSR/16)));
 		//two_level_sigma_delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
+		three_level_sigma_delta(pdm+(j*(OSR/16)), (*(pcm+j)), (OSR/16));
 	}
 }
 
